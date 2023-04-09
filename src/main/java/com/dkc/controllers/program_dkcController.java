@@ -7,6 +7,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -64,7 +65,7 @@ public class program_dkcController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Object> update(@PathVariable("id") String id,@Valid @RequestBody program_dkc data)
+    public ResponseEntity<Object> update(@PathVariable("id") String id,@Valid @RequestBody program_dkc data, BindingResult bindingResult)
     {
         Map<String, Object> responseMap = new HashMap<>();
         try{
@@ -73,6 +74,7 @@ public class program_dkcController {
                 responseMap.put("message", "Program DKC not found!");
                 return new ResponseEntity<>(responseMap, HttpStatus.NOT_FOUND);
             }
+            
             program_dkc program_dkcs = Program_dkcService.save(data);
             responseMap.put("message", "Program DKC successfully updated!");
             responseMap.put("data", program_dkcs);
@@ -80,7 +82,7 @@ public class program_dkcController {
         }
         catch (Exception e)
         {
-            responseMap.put("error", "Error occured while updating Program DKC");
+            responseMap.put("error", "Error occured while updating Program DKC!");
             responseMap.put("message", "Program DKC not found!");
             return new ResponseEntity<>(responseMap, HttpStatus.NOT_FOUND);
         }
