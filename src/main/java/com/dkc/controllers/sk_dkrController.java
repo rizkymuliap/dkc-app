@@ -7,6 +7,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,9 +30,14 @@ public class sk_dkrController {
     private sk_dkrService Sk_dkrService;
 
     @PostMapping()
-    public ResponseEntity<Object> create(@RequestBody sk_dkr data)
+    public ResponseEntity<Object> create(@Valid @RequestBody sk_dkr data, BindingResult bindingResult)
     {
         Map<String, Object> responseMap = new HashMap<>();
+        if(bindingResult.hasErrors())
+        {
+            responseMap.put("message", "All field required!");
+            return new ResponseEntity<>(responseMap, HttpStatus.BAD_REQUEST);
+        }
         sk_dkr sk_dkrs = Sk_dkrService.save(data);
         responseMap.put("message", "SK DKR Successfully uploaded!");
         responseMap.put("data", sk_dkrs);
@@ -43,10 +49,21 @@ public class sk_dkrController {
     public ResponseEntity<Object> findOne(@PathVariable("id") String id)
     {
         Map<String, Object> responseMap = new HashMap<>();
-        sk_dkr sk_dkrs = Sk_dkrService.findOne(id);
-        responseMap.put("message", "SK DKR found!");
-        responseMap.put("data", sk_dkrs);
-        return new ResponseEntity<>(responseMap, HttpStatus.OK);
+        try{
+            sk_dkr sk_dkrs = Sk_dkrService.findOne(id);
+            if(sk_dkrs.getSk_id() == null){
+                responseMap.put("message", "SK DKR not found!");
+                return new ResponseEntity<>(responseMap, HttpStatus.NOT_FOUND);
+            }
+            responseMap.put("message", "SK DKR found!");
+            responseMap.put("data", sk_dkrs);
+            return new ResponseEntity<>(responseMap, HttpStatus.OK);
+        }
+        catch (Exception e)
+        {
+            responseMap.put("message", "SK DKR not found!");
+            return new ResponseEntity<>(responseMap, HttpStatus.NOT_FOUND);
+        }
     }
     
     @GetMapping
@@ -64,7 +81,7 @@ public class sk_dkrController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Object> update(@PathVariable("id") String id ,@Valid @RequestBody sk_dkr data)
+    public ResponseEntity<Object> update(@PathVariable("id") String id ,@Valid @RequestBody sk_dkr data, BindingResult bindingResult)
     {
         Map<String, Object> responseMap = new HashMap<>();
         try{
@@ -73,6 +90,11 @@ public class sk_dkrController {
             {
                 responseMap.put("message", "SK DKR not found!");
                 return new ResponseEntity<>(responseMap, HttpStatus.NOT_FOUND);
+            }
+            if(bindingResult.hasErrors())
+            {
+                responseMap.put("message", "All field required!");
+                return new ResponseEntity<>(responseMap, HttpStatus.BAD_REQUEST);
             }
             sk_dkr sk_dkrs = Sk_dkrService.save(data);
             responseMap.put("message", "SK DKR successfully updated!");

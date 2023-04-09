@@ -7,6 +7,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,9 +30,14 @@ public class schoolController {
     private schoolService SchoolService;
 
     @PostMapping()
-    public ResponseEntity<Object> create(@RequestBody school data)
+    public ResponseEntity<Object> create(@Valid @RequestBody school data, BindingResult bindingResult)
     {
         Map<String, Object> responseMap = new HashMap<>();
+        if( bindingResult.hasErrors())
+        {
+            responseMap.put("message", "All field required!");
+            return new ResponseEntity<>(responseMap, HttpStatus.BAD_REQUEST); 
+        }
         school schools = SchoolService.save(data);
         responseMap.put("message", "School successfully uploaded!");
         responseMap.put("data", schools);
@@ -42,10 +48,22 @@ public class schoolController {
     public ResponseEntity<Object> findOne(@PathVariable("id") String id)
     {
         Map<String, Object> responseMap = new HashMap<>();
-        school schools = SchoolService.findOne(id);
-        responseMap.put("message", "School found!");
-        responseMap.put("data", schools);
-        return new ResponseEntity<>(responseMap, HttpStatus.OK);
+        try{
+            school schools = SchoolService.findOne(id);
+            if(schools.getSchool_id() == null)
+            {
+                responseMap.put("message", "School not found!");
+                return new ResponseEntity<>(responseMap, HttpStatus.NOT_FOUND);
+            }
+            responseMap.put("message", "School found!");
+            responseMap.put("data", schools);
+            return new ResponseEntity<>(responseMap, HttpStatus.OK);
+        }
+        catch (Exception e)
+        {
+            responseMap.put("message", "School not found!");
+            return new ResponseEntity<>(responseMap, HttpStatus.NOT_FOUND);
+        }
     }
     
     @GetMapping
@@ -63,7 +81,7 @@ public class schoolController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Object> update(@PathVariable("id") String id, @Valid @RequestBody school data)
+    public ResponseEntity<Object> update(@PathVariable("id") String id, @Valid @RequestBody school data, BindingResult bindingResult)
     {
         Map<String, Object> responseMap = new HashMap<>();
         try{
@@ -72,6 +90,11 @@ public class schoolController {
             {
                 responseMap.put("message", "School not found!");
                 return new ResponseEntity<>(responseMap, HttpStatus.NOT_FOUND);
+            }
+            if(bindingResult.hasErrors())
+            {
+                responseMap.put("message","All field required!");
+                return new ResponseEntity<>(responseMap, HttpStatus.BAD_REQUEST);
             }
             school schools = SchoolService.save(data);
             responseMap.put("message", "School successfully updated!");

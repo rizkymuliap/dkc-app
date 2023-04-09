@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,9 +31,14 @@ public class program_dkrController {
     private program_dkrService Program_dkrService;
 
     @PostMapping()
-    public ResponseEntity<Object> create(@RequestBody program_dkr data)
+    public ResponseEntity<Object> create(@Valid @RequestBody program_dkr data, BindingResult bindingResult)
     {
         Map<String, Object> responseMap =  new HashMap<>();
+        if(bindingResult.hasErrors())
+        {
+            responseMap.put("message", "All field required!");
+            return new ResponseEntity<>(responseMap, HttpStatus.BAD_REQUEST);
+        }
         program_dkr program_dkrs = Program_dkrService.save(data);
         responseMap.put("message", "Program DKR successfully uploaded!");
         responseMap.put("data", program_dkrs);
@@ -43,10 +49,22 @@ public class program_dkrController {
     public ResponseEntity<Object> findOne(@PathVariable("id") String id)
     {
         Map<String, Object> responseMap = new HashMap<>();
-        program_dkr program_dkrs = Program_dkrService.findOne(id);
-        responseMap.put("message", "Program DKR found!");
-        responseMap.put("data", program_dkrs);
-        return new ResponseEntity<>(responseMap, HttpStatus.OK);
+        try{
+            program_dkr program_dkrs = Program_dkrService.findOne(id);
+            if(program_dkrs.getProgram_id() == null)
+            {
+                responseMap.put("message", "Program DKR not found!");
+                return new ResponseEntity<>(responseMap, HttpStatus.NOT_FOUND);
+            }
+            responseMap.put("message", "Program DKR found!");
+            responseMap.put("data", program_dkrs);
+            return new ResponseEntity<>(responseMap, HttpStatus.OK);
+        }
+        catch (Exception e)
+        {
+            responseMap.put("message", "Program DKR not found!");
+            return new ResponseEntity<>(responseMap, HttpStatus.NOT_FOUND);
+        }
     }
     
     @GetMapping
@@ -64,7 +82,7 @@ public class program_dkrController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Object> update(@PathVariable("id") String id,@Valid @RequestBody program_dkr data)
+    public ResponseEntity<Object> update(@PathVariable("id") String id,@Valid @RequestBody program_dkr data, BindingResult bindingResult)
     {
         Map<String, Object> responseMap = new HashMap<>();
         try{
@@ -72,6 +90,11 @@ public class program_dkrController {
             if(program_dkr.getDkr_id() == null){
                 responseMap.put("message", "Program DKR not found!");
                 return new ResponseEntity<>(responseMap, HttpStatus.NOT_FOUND);
+            }
+            if(bindingResult.hasErrors())
+            {
+                responseMap.put("message", "All field required!");
+                return new ResponseEntity<>(responseMap, HttpStatus.BAD_REQUEST);
             }
             program_dkr program_dkrs = Program_dkrService.save(data);
             responseMap.put("message", "Program DKR successfully updated!");

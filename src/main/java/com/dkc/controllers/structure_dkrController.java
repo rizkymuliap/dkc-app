@@ -7,6 +7,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,9 +30,14 @@ public class structure_dkrController {
     private structure_dkrService Structure_dkrService;
 
     @PostMapping()
-    public ResponseEntity<Object> create(@RequestBody structure_dkr data)
+    public ResponseEntity<Object> create(@Valid @RequestBody structure_dkr data, BindingResult bindingResult)
     {
         Map<String, Object> responseMap = new HashMap<>();
+        if(bindingResult.hasErrors())
+        {
+            responseMap.put("message", "All field required!");
+            return new ResponseEntity<>(responseMap, HttpStatus.BAD_REQUEST);
+        }
         structure_dkr structure_dkrs = Structure_dkrService.save(data);
         responseMap.put("message", "Structure DKR successfully uploaded!");
         responseMap.put("data", structure_dkrs);
@@ -42,10 +48,23 @@ public class structure_dkrController {
     public ResponseEntity<Object> findOne(@PathVariable("id") String id)
     {
         Map<String, Object> responseMap =  new HashMap<>();
-        structure_dkr structure_dkrs = Structure_dkrService.findOne(id);
-        responseMap.put("message", "Structure DKR found!");
-        responseMap.put("data", structure_dkrs);
-        return new ResponseEntity<>(responseMap, HttpStatus.OK);
+        try{
+            structure_dkr structure_dkrs = Structure_dkrService.findOne(id);
+            if(structure_dkrs.getStructure_id() == null)
+            {
+                responseMap.put("message", "Structure DKR not found!");
+                return new ResponseEntity<>(responseMap, HttpStatus.NOT_FOUND);
+            }
+            responseMap.put("message", "Structure DKR found!");
+            responseMap.put("data", structure_dkrs);
+            return new ResponseEntity<>(responseMap, HttpStatus.OK);
+        }
+        catch (Exception e)
+        {
+            responseMap.put("message", "Structure DKR not found!");
+            return new ResponseEntity<>(responseMap, HttpStatus.NOT_FOUND);
+        }
+        
     } 
     
     @GetMapping
@@ -63,7 +82,7 @@ public class structure_dkrController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Object> update(@PathVariable("id") String id, @Valid @RequestBody structure_dkr data)
+    public ResponseEntity<Object> update(@PathVariable("id") String id, @Valid @RequestBody structure_dkr data, BindingResult bindingResult)
     {
         Map<String, Object> responseMap = new HashMap<>();
         try{
@@ -72,6 +91,11 @@ public class structure_dkrController {
             {
                 responseMap.put("message", "Structure DKR not found!");
                 return new ResponseEntity<>(responseMap, HttpStatus.NOT_FOUND);
+            }
+            if(bindingResult.hasErrors())
+            {
+                responseMap.put("message", "All field required!");
+                return new ResponseEntity<>(responseMap, HttpStatus.BAD_REQUEST);
             }
             structure_dkr structure_dkrs = Structure_dkrService.save(data);
             responseMap.put("message", "Structure DKR successfully updated!");

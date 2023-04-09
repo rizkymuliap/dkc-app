@@ -30,9 +30,14 @@ public class speech_leader_dkcController {
     private speech_leader_dkcService Speech_leader_dkcService;
 
     @PostMapping()
-    public ResponseEntity<Object> create(@RequestBody speech_leader_dkc data)
+    public ResponseEntity<Object> create(@Valid @RequestBody speech_leader_dkc data, BindingResult bindingResult)
     {
         Map<String, Object> responseMap = new HashMap<>();
+        if(bindingResult.hasErrors())
+        {
+            responseMap.put("message", "All field required!");
+            return new ResponseEntity<>(responseMap, HttpStatus.BAD_REQUEST);
+        }
         speech_leader_dkc speech_leader_dkcs = Speech_leader_dkcService.save(data);
         responseMap.put("message", "Speech successfully uploaded");
         responseMap.put("data", speech_leader_dkcs);
@@ -43,10 +48,23 @@ public class speech_leader_dkcController {
     public ResponseEntity<Object> findOne(@PathVariable("id") String id)
     {
         Map<String, Object> responseMap = new HashMap<>();
-        speech_leader_dkc speech_leader_dkcs = Speech_leader_dkcService.findOne(id);
-        responseMap.put("message", "Speech found!");
-        responseMap.put("data", speech_leader_dkcs);
-        return new ResponseEntity<>(responseMap, HttpStatus.OK);
+        try{
+            speech_leader_dkc speech_leader_dkcs = Speech_leader_dkcService.findOne(id);
+            if(speech_leader_dkcs.getSpeech_id() == null)
+            {
+                responseMap.put("message", "Speech not found!");
+                return new ResponseEntity<>(responseMap, HttpStatus.NOT_FOUND);
+            }
+            responseMap.put("message", "Speech found!");
+            responseMap.put("data", speech_leader_dkcs);
+            return new ResponseEntity<>(responseMap, HttpStatus.OK);
+        }
+        catch (Exception e)
+        {
+            responseMap.put("message", "Speech not found!");
+            return new ResponseEntity<>(responseMap, HttpStatus.NOT_FOUND);
+        }
+        
     }
     
     @GetMapping

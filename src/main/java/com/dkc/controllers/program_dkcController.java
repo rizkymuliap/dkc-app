@@ -30,9 +30,14 @@ public class program_dkcController {
     private program_dkcService Program_dkcService;
 
     @PostMapping()
-    public ResponseEntity<Object> create(@RequestBody program_dkc data)
+    public ResponseEntity<Object> create(@Valid @RequestBody program_dkc data, BindingResult bindingResult)
     {
         Map<String, Object> responseMap = new HashMap<>();
+        if(bindingResult.hasErrors())
+        {
+            responseMap.put("message", "All field required!");
+            return new ResponseEntity<>(responseMap, HttpStatus.BAD_REQUEST);
+        }
         program_dkc program_dkcs = Program_dkcService.save(data);
         responseMap.put("message", "Program successfully uploaded!");
         responseMap.put("data", program_dkcs);
@@ -40,13 +45,27 @@ public class program_dkcController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Object> findOne(@PathVariable("id") String id)
+    public ResponseEntity<Object> findOne(@PathVariable("id") String id, BindingResult bindingResult)
     {
         Map<String, Object> responseMap = new HashMap<>();
-        program_dkc program_dkcs = Program_dkcService.findOne(id);
-        responseMap.put("message", "Program DKC found!");
-        responseMap.put("data", program_dkcs);
-        return new ResponseEntity<>(responseMap, HttpStatus.OK);
+        try{
+            program_dkc program_dkc = Program_dkcService.findOne(id);
+            if(program_dkc.getProgram_id() == null)
+            {
+                responseMap.put("message", "Program DKC not found!");
+                return new ResponseEntity<>(responseMap, HttpStatus.NOT_FOUND);
+            }
+            program_dkc program_dkcs = Program_dkcService.findOne(id);
+            responseMap.put("message", "Program DKC found!");
+            responseMap.put("data", program_dkcs);
+            return new ResponseEntity<>(responseMap, HttpStatus.OK);
+        }
+        catch (Exception e)
+        {
+            responseMap.put("message", "Program DKC not found!");
+            return new ResponseEntity<>(responseMap, HttpStatus.NOT_FOUND);
+        }
+        
     }
     
     
