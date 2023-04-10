@@ -22,16 +22,6 @@ import com.dkc.services.achievementService;
 
 import jakarta.validation.Valid;
 
-/*
- * KURANG : 
- * Post Mapping kurang rapi
- * put maping belum
- * delete maping belum
- */
-
-
-
-
 @RestController
 @RequestMapping("/api/achievements")
 public class achievementController {
