@@ -90,7 +90,7 @@ public class dkrController {
   
 
     @PutMapping("/{id}")
-    public ResponseEntity<Object> update(@Valid @RequestBody dkr data, @PathVariable("id") String id)
+    public ResponseEntity<Object> update(@Valid @RequestBody dkr data, @PathVariable("id") String id,BindingResult bindingResult)
     {
         Map<String, Object> responseMap = new HashMap<>();
         try
@@ -100,6 +100,11 @@ public class dkrController {
             {
                 responseMap.put("message", "DKR not found!");
                 return new ResponseEntity<>(responseMap, HttpStatus.NOT_FOUND);
+            }
+            if(bindingResult.hasErrors())
+            {
+                responseMap.put("message", "All field required!");
+                return new ResponseEntity<>(responseMap, HttpStatus.BAD_REQUEST);
             }
             dkr dkrs = DkrService.save(data);
             responseMap.put("message", "DKR successfully updated!");

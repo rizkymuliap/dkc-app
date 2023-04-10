@@ -84,7 +84,7 @@ public class agendaController {
      }
 
    @PutMapping("/{id}")
-   public ResponseEntity<Object> update(@PathVariable("id") String id, @Valid @RequestBody agenda data)
+   public ResponseEntity<Object> update(@PathVariable("id") String id, @Valid @RequestBody agenda data, BindingResult bindingResult)
    {    Map<String, Object> responseMap = new HashMap<>();
       try{
         agenda agenda = AgendaService.findOne(id);
@@ -92,6 +92,11 @@ public class agendaController {
         {
             responseMap.put("message", "Agenda not found!");
             return new ResponseEntity<>(responseMap, HttpStatus.NOT_FOUND);
+        }
+        if(bindingResult.hasErrors())
+        {
+            responseMap.put("message", "Title or schedule date required!");
+            return new ResponseEntity<>(responseMap, HttpStatus.BAD_REQUEST);
         }
         agenda agendas = AgendaService.save(data);
         responseMap.put("message", "Agenda successfully updated!");

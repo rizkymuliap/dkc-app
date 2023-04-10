@@ -93,7 +93,11 @@ public class program_dkcController {
                 responseMap.put("message", "Program DKC not found!");
                 return new ResponseEntity<>(responseMap, HttpStatus.NOT_FOUND);
             }
-            
+            if(bindingResult.hasErrors())
+            {
+                responseMap.put("message", "All field required!");
+                return new ResponseEntity<>(responseMap, HttpStatus.BAD_REQUEST);
+            }
             program_dkc program_dkcs = Program_dkcService.save(data);
             responseMap.put("message", "Program DKC successfully updated!");
             responseMap.put("data", program_dkcs);
