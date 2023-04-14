@@ -19,20 +19,33 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 import com.dkc.models.entities.scout_document;
+import com.dkc.services.authService;
 import com.dkc.services.scout_documentService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/scout-documents")
 public class scout_documentController {
+    
     @Autowired 
     private scout_documentService Scout_documentService;
+    @Autowired 
+    private authService AuthService;
 
     @PostMapping()
-    public ResponseEntity<Object> create(@Valid @RequestBody scout_document data, BindingResult bindingResult)
+    public ResponseEntity<Object> create(@Valid @RequestBody scout_document data, BindingResult bindingResult, HttpServletRequest request)
     {
         Map<String, Object> responseMap = new HashMap<>();
+        String token = request.getHeader("token");
+        boolean checkValid = AuthService.checkValid(token);
+        if(!checkValid) {
+            responseMap.put("message", "Not authorize!");
+            responseMap.put("data", checkValid);
+            return new ResponseEntity<>(responseMap, HttpStatus.OK);
+        }
+
         if(bindingResult.hasErrors())
         {
             responseMap.put("message", "All field required!");
@@ -81,10 +94,18 @@ public class scout_documentController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Object> update(@PathVariable("id") String id,@Valid @RequestBody scout_document data, BindingResult bindingResult)
+    public ResponseEntity<Object> update(@PathVariable("id") String id,@Valid @RequestBody scout_document data, BindingResult bindingResult, HttpServletRequest request)
     {
         Map<String, Object> responseMap = new HashMap<>();
         try{
+            String token = request.getHeader("token");
+            boolean checkValid = AuthService.checkValid(token);
+            if(!checkValid) {
+                responseMap.put("message", "Not authorize!");
+                responseMap.put("data", checkValid);
+                return new ResponseEntity<>(responseMap, HttpStatus.OK);
+            }
+            
             scout_document scout_document =Scout_documentService.findOne(id);
             if(scout_document.getDocument_id() == null)
             {
@@ -111,10 +132,18 @@ public class scout_documentController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> removeOne(@PathVariable("id") String id)
+    public ResponseEntity<Object> removeOne(@PathVariable("id") String id, HttpServletRequest request)
     {
         Map<String, Object> responseMap = new HashMap<>();
         try{
+            String token = request.getHeader("token");
+            boolean checkValid = AuthService.checkValid(token);
+            if(!checkValid) {
+                responseMap.put("message", "Not authorize!");
+                responseMap.put("data", checkValid);
+                return new ResponseEntity<>(responseMap, HttpStatus.OK);
+            }
+            
             scout_document scout_document =Scout_documentService.findOne(id);
             if(scout_document.getDocument_id() == null)
             {

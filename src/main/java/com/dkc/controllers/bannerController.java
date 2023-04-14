@@ -18,7 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.dkc.models.entities.banner;
 import com.dkc.services.bannerService;
+import com.dkc.services.authService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 import java.util.List;
@@ -29,12 +31,23 @@ public class bannerController {
     
     @Autowired 
     private bannerService BannerService; 
+    @Autowired 
+    private authService AuthService; 
 
     @PostMapping()
-    public ResponseEntity<Object> create(@Valid @RequestBody banner data, BindingResult bindingResult)
+    public ResponseEntity<Object> create(@Valid @RequestBody banner data, HttpServletRequest request, BindingResult bindingResult)
     {
         Map<String, Object> responseMap =  new HashMap<>();
         try{
+            // if token not valid
+            String token = request.getHeader("token");
+            boolean checkValid = AuthService.checkValid(token);
+            if(!checkValid) {
+                responseMap.put("message", "Not authorize!");
+                responseMap.put("data", checkValid);
+                return new ResponseEntity<>(responseMap, HttpStatus.OK);
+            }
+
             if(bindingResult.hasErrors())
             {
                 responseMap.put("message", "All field required!");
@@ -114,10 +127,18 @@ public class bannerController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> removeOne(@PathVariable("id") String id)
+    public ResponseEntity<Object> removeOne(@PathVariable("id") String id, HttpServletRequest request)
     {
         Map<String, Object> responseMap = new HashMap<>();
         try{
+            String token = request.getHeader("token");
+            boolean checkValid = AuthService.checkValid(token);
+            if(!checkValid) {
+                responseMap.put("message", "Not authorize!");
+                responseMap.put("data", checkValid);
+                return new ResponseEntity<>(responseMap, HttpStatus.OK);
+            }
+            
             banner banners = BannerService.findOne(id);
             if(banners == null){
                 responseMap.put("message", "All field required!");

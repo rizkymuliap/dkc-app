@@ -19,7 +19,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.dkc.models.entities.area_coordinator;
 import com.dkc.services.area_coordinatorService;
+import com.dkc.services.authService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 @RestController
@@ -28,12 +30,22 @@ public class area_coordinatorController {
 
     @Autowired 
     private area_coordinatorService Area_coordinatorService;
+    @Autowired 
+    private authService AuthService; 
 
     @PostMapping()
-    public ResponseEntity<Object> create(@Valid @RequestBody area_coordinator data, BindingResult bindingResult)
+    public ResponseEntity<Object> create(@Valid @RequestBody area_coordinator data, BindingResult bindingResult, HttpServletRequest request)
     {
         Map<String, Object> responseMap = new HashMap<>();
         try{
+            String token = request.getHeader("token");
+            boolean checkValid = AuthService.checkValid(token);
+            if(!checkValid) {
+                responseMap.put("message", "Not authorize!");
+                responseMap.put("data", checkValid);
+                return new ResponseEntity<>(responseMap, HttpStatus.OK);
+            }
+
             area_coordinator area_coordinators = Area_coordinatorService.save(data);
             if(bindingResult.hasErrors())
             {
@@ -91,10 +103,18 @@ public class area_coordinatorController {
     
 
     @PutMapping("/{id}")
-    public ResponseEntity<Object> update(@PathVariable("id") String id,@Valid @RequestBody area_coordinator data, BindingResult bindingResult)
+    public ResponseEntity<Object> update(@PathVariable("id") String id,@Valid @RequestBody area_coordinator data, BindingResult bindingResult, HttpServletRequest request)
     {
         Map<String, Object> responseMap = new HashMap<>();
         try{
+            String token = request.getHeader("token");
+            boolean checkValid = AuthService.checkValid(token);
+            if(!checkValid) {
+                responseMap.put("message", "Not authorize!");
+                responseMap.put("data", checkValid);
+                return new ResponseEntity<>(responseMap, HttpStatus.OK);
+            }
+            
             area_coordinator area_coordinator = Area_coordinatorService.findOne(id);
             if(area_coordinator == null){
                 responseMap.put("message", "Area Coordinator not found!");
@@ -120,10 +140,18 @@ public class area_coordinatorController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> removeOne(@PathVariable("id") String id)
+    public ResponseEntity<Object> removeOne(@PathVariable("id") String id, HttpServletRequest request)
     {
         Map<String, Object> responseMap = new HashMap<>();
         try{
+            String token = request.getHeader("token");
+            boolean checkValid = AuthService.checkValid(token);
+            if(!checkValid) {
+                responseMap.put("message", "Not authorize!");
+                responseMap.put("data", checkValid);
+                return new ResponseEntity<>(responseMap, HttpStatus.OK);
+            }
+            
             area_coordinator area_coordinators =  Area_coordinatorService.findOne(id);
             if(area_coordinators == null)
             {

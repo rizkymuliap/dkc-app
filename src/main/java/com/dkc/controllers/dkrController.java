@@ -18,8 +18,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.dkc.models.entities.dkr;
+import com.dkc.services.authService;
 import com.dkc.services.dkrService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 @RestController
@@ -28,11 +30,22 @@ public class dkrController {
     
     @Autowired 
     private dkrService DkrService; 
+    @Autowired 
+    private authService AuthService; 
+    
     @PostMapping()
-    public ResponseEntity<Object> create(@Valid @RequestBody dkr data, BindingResult bindingResult)
+    public ResponseEntity<Object> create(@Valid @RequestBody dkr data, BindingResult bindingResult, HttpServletRequest request)
     {
         Map<String, Object> responseMap = new HashMap<>();
         try{
+            String token = request.getHeader("token");
+            boolean checkValid = AuthService.checkValid(token);
+            if(!checkValid) {
+                responseMap.put("message", "Not authorize!");
+                responseMap.put("data", checkValid);
+                return new ResponseEntity<>(responseMap, HttpStatus.OK);
+            }
+
             if(bindingResult.hasErrors()){
                 responseMap.put("message", "All field required!");
                 return new ResponseEntity<>(responseMap, HttpStatus.BAD_REQUEST);
@@ -90,11 +103,19 @@ public class dkrController {
   
 
     @PutMapping("/{id}")
-    public ResponseEntity<Object> update(@Valid @RequestBody dkr data, @PathVariable("id") String id,BindingResult bindingResult)
+    public ResponseEntity<Object> update(@Valid @RequestBody dkr data, @PathVariable("id") String id, HttpServletRequest request, BindingResult bindingResult)
     {
         Map<String, Object> responseMap = new HashMap<>();
         try
         {
+            String token = request.getHeader("token");
+            boolean checkValid = AuthService.checkValid(token);
+            if(!checkValid) {
+                responseMap.put("message", "Not authorize!");
+                responseMap.put("data", checkValid);
+                return new ResponseEntity<>(responseMap, HttpStatus.OK);
+            }
+            
             dkr dkr = DkrService.findOne(id);
             if(dkr == null)
             {
@@ -121,11 +142,19 @@ public class dkrController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> removeOne(@PathVariable("id") String id)
+    public ResponseEntity<Object> removeOne(@PathVariable("id") String id, HttpServletRequest request)
     {
         Map<String, Object> responseMap = new HashMap<>();
         try
         {
+            String token = request.getHeader("token");
+            boolean checkValid = AuthService.checkValid(token);
+            if(!checkValid) {
+                responseMap.put("message", "Not authorize!");
+                responseMap.put("data", checkValid);
+                return new ResponseEntity<>(responseMap, HttpStatus.OK);
+            }
+            
             dkr dkrs = DkrService.findOne(id);
             if(dkrs == null)
             {

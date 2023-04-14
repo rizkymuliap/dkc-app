@@ -18,8 +18,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.dkc.models.entities.speech_leader_dkc;
+import com.dkc.services.authService;
 import com.dkc.services.speech_leader_dkcService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 @RestController
@@ -28,11 +30,21 @@ public class speech_leader_dkcController {
     
     @Autowired 
     private speech_leader_dkcService Speech_leader_dkcService;
+    @Autowired 
+    private authService AuthService; 
 
     @PostMapping()
-    public ResponseEntity<Object> create(@Valid @RequestBody speech_leader_dkc data, BindingResult bindingResult)
+    public ResponseEntity<Object> create(@Valid @RequestBody speech_leader_dkc data, BindingResult bindingResult, HttpServletRequest request)
     {
         Map<String, Object> responseMap = new HashMap<>();
+        String token = request.getHeader("token");
+        boolean checkValid = AuthService.checkValid(token);
+        if(!checkValid) {
+            responseMap.put("message", "Not authorize!");
+            responseMap.put("data", checkValid);
+            return new ResponseEntity<>(responseMap, HttpStatus.OK);
+        }
+
         if(bindingResult.hasErrors())
         {
             responseMap.put("message", "All field required!");
@@ -82,9 +94,17 @@ public class speech_leader_dkcController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Object> update(@PathVariable("id") String id,@Valid @RequestBody speech_leader_dkc data, BindingResult bindingResult)
+    public ResponseEntity<Object> update(@PathVariable("id") String id,@Valid @RequestBody speech_leader_dkc data, BindingResult bindingResult, HttpServletRequest request)
     {
         Map<String, Object> responseMap = new HashMap<>();
+        String token = request.getHeader("token");
+        boolean checkValid = AuthService.checkValid(token);
+        if(!checkValid) {
+            responseMap.put("message", "Not authorize!");
+            responseMap.put("data", checkValid);
+            return new ResponseEntity<>(responseMap, HttpStatus.OK);
+        }
+        
         try{
             speech_leader_dkc speech_leader_dkc = Speech_leader_dkcService.findOne(id);
             if(speech_leader_dkc.getSpeech_id() == null)
@@ -112,9 +132,17 @@ public class speech_leader_dkcController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> removeOne(@PathVariable("id") String id)
+    public ResponseEntity<Object> removeOne(@PathVariable("id") String id, HttpServletRequest request)
     {
         Map<String, Object> responseMap = new HashMap<>();
+        String token = request.getHeader("token");
+        boolean checkValid = AuthService.checkValid(token);
+        if(!checkValid) {
+            responseMap.put("message", "Not authorize!");
+            responseMap.put("data", checkValid);
+            return new ResponseEntity<>(responseMap, HttpStatus.OK);
+        }
+        
         try{
             speech_leader_dkc speech_leader_dkc = Speech_leader_dkcService.findOne(id);
             if(speech_leader_dkc.getSpeech_id() == null)

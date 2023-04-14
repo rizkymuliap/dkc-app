@@ -18,7 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.dkc.models.entities.agenda;
 import com.dkc.services.agendaService;
+import com.dkc.services.authService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 import java.util.List;
@@ -29,43 +31,60 @@ public class agendaController {
 
     @Autowired
     private agendaService AgendaService;
+    @Autowired 
+    private authService AuthService; 
     
     @PostMapping()
-    public ResponseEntity<Object> create(@RequestBody agenda data, BindingResult bindingResult)
+    public ResponseEntity<Object> create(@RequestBody agenda data, HttpServletRequest request, BindingResult bindingResult)
     {
-          Map<String, Object> responseMap = new HashMap<>();
-            if(bindingResult.hasErrors()){
-              responseMap.put("message", "Title or schedule date required!");
-              return new ResponseEntity<>(responseMap, HttpStatus.BAD_REQUEST);
-            }
-            agenda agendas = AgendaService.save(data);
-            responseMap.put("message", "Agenda successfully uploaded!");
-            responseMap.put("data", agendas);
-            return new ResponseEntity<>(responseMap, HttpStatus.OK);
-          
+      Map<String, Object> responseMap = new HashMap<>();
+      try{
+        String token = request.getHeader("token");
+        boolean checkValid = AuthService.checkValid(token);
+        if(!checkValid) {
+          responseMap.put("message", "Not authorize!");
+          responseMap.put("data", checkValid);
+          return new ResponseEntity<>(responseMap, HttpStatus.OK);
+        }
+
+        if(bindingResult.hasErrors()){
+          responseMap.put("message", "Title or schedule date required!");
+          return new ResponseEntity<>(responseMap, HttpStatus.BAD_REQUEST);
+        }
+        agenda agendas = AgendaService.save(data);
+        responseMap.put("message", "Agenda successfully uploaded!");
+        responseMap.put("data", agendas);
+        return new ResponseEntity<>(responseMap, HttpStatus.OK);
+      }
+      catch(Exception e)
+      {
+        responseMap.put("error", "Error occurred while upload agenda!");
+        responseMap.put("message", "Agenda not found!");
+        return new ResponseEntity<>(responseMap, HttpStatus.NOT_FOUND);
+      }
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Object> findOne(@PathVariable("id") String id)
     {
-          Map<String, Object> responseMap = new HashMap<>();
-          try
-          {
-            agenda agendas = AgendaService.findOne(id);
-            if(agendas == null)
-            {
-                responseMap.put("message", "Agenda not found!");
-                return new ResponseEntity<>(responseMap, HttpStatus.NOT_FOUND);
-            }
-            agenda agenda = AgendaService.findOne(id);
-            responseMap.put("message", "Agenda found!");
-            responseMap.put("data", agenda);
-            return new ResponseEntity<>(responseMap, HttpStatus.OK);
-          }catch(Exception e)
-          {
+      Map<String, Object> responseMap = new HashMap<>();
+      try
+      {
+        agenda agendas = AgendaService.findOne(id);
+        if(agendas == null)
+        {
             responseMap.put("message", "Agenda not found!");
             return new ResponseEntity<>(responseMap, HttpStatus.NOT_FOUND);
-          }
+        }
+        agenda agenda = AgendaService.findOne(id);
+        responseMap.put("message", "Agenda found!");
+        responseMap.put("data", agenda);
+        return new ResponseEntity<>(responseMap, HttpStatus.OK);
+      }catch(Exception e)
+      {
+        responseMap.put("message", "Agenda not found!");
+        return new ResponseEntity<>(responseMap, HttpStatus.NOT_FOUND);
+      }
           
     }
     
@@ -84,9 +103,18 @@ public class agendaController {
      }
 
    @PutMapping("/{id}")
-   public ResponseEntity<Object> update(@PathVariable("id") String id, @Valid @RequestBody agenda data, BindingResult bindingResult)
-   {    Map<String, Object> responseMap = new HashMap<>();
+   public ResponseEntity<Object> update(@PathVariable("id") String id, @Valid @RequestBody agenda data, HttpServletRequest request, BindingResult bindingResult)
+   {    
+    Map<String, Object> responseMap = new HashMap<>();
       try{
+        String token = request.getHeader("token");
+        boolean checkValid = AuthService.checkValid(token);
+        if(!checkValid) {
+          responseMap.put("message", "Not authorize!");
+          responseMap.put("data", checkValid);
+          return new ResponseEntity<>(responseMap, HttpStatus.OK);
+        }
+        
         agenda agenda = AgendaService.findOne(id);
         if(agenda == null)
         {
@@ -113,10 +141,18 @@ public class agendaController {
   }
 
    @DeleteMapping("/{id}")
-   public ResponseEntity<Object> removeOne(@PathVariable("id") String id)
+   public ResponseEntity<Object> removeOne(@PathVariable("id") String id, HttpServletRequest request)
    {
      Map<String, Object> responseMap = new HashMap<>();
      try{
+        String token = request.getHeader("token");
+        boolean checkValid = AuthService.checkValid(token);
+        if(!checkValid) {
+          responseMap.put("message", "Not authorize!");
+          responseMap.put("data", checkValid);
+          return new ResponseEntity<>(responseMap, HttpStatus.OK);
+        }
+
         agenda agenda = AgendaService.findOne(id);
         if(agenda == null)
         {

@@ -17,9 +17,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.dkc.models.entities.auth;
 import com.dkc.models.entities.data_potensi;
+import com.dkc.services.authService;
 import com.dkc.services.data_potensiService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 
@@ -29,15 +32,30 @@ public class data_potensiController {
 
     @Autowired 
     private data_potensiService Data_potensiService; 
+    @Autowired 
+    private authService AuthService; 
+    
     @PostMapping()
-    public ResponseEntity<Object> create(@Valid @RequestBody data_potensi data, BindingResult bindingResult)
+    public ResponseEntity<Object> create(@Valid @RequestBody data_potensi data, BindingResult bindingResult, HttpServletRequest request)
     {
         Map<String, Object> responseMap = new HashMap<>();
         try{
+            String token = request.getHeader("token");
+            boolean checkValid = AuthService.checkValid(token);
+            if(!checkValid) {
+                responseMap.put("message", "Not authorize!");
+                responseMap.put("data", checkValid);
+                return new ResponseEntity<>(responseMap, HttpStatus.OK);
+            }
+
             if(bindingResult.hasErrors()){
                 responseMap.put("message", "All field required!");
                 return new ResponseEntity<>(responseMap, HttpStatus.BAD_REQUEST);
             }
+            
+            auth authData = AuthService.authData(token);
+            data.setDkr_id(authData.getDkr_id());
+
             data_potensi data_potensis = Data_potensiService.save(data);
             responseMap.put("message", "Data potensi successfully uploaded!");
             responseMap.put("data", data_potensis);
@@ -92,10 +110,18 @@ public class data_potensiController {
     
 
     @PutMapping("/{id}")
-    public ResponseEntity<Object> update(@Valid @RequestBody data_potensi data, @PathVariable("id") String id, BindingResult bindingResult)
+    public ResponseEntity<Object> update(@Valid @RequestBody data_potensi data, @PathVariable("id") String id, BindingResult bindingResult, HttpServletRequest request)
     {
         Map<String, Object> responseMap = new HashMap<>();
         try{
+            String token = request.getHeader("token");
+            boolean checkValid = AuthService.checkValid(token);
+            if(!checkValid) {
+                responseMap.put("message", "Not authorize!");
+                responseMap.put("data", checkValid);
+                return new ResponseEntity<>(responseMap, HttpStatus.OK);
+            }
+            
             data_potensi data_potensi = Data_potensiService.findOne(id);
             if(data_potensi == null)
             {
@@ -122,10 +148,18 @@ public class data_potensiController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> removeOne(@PathVariable("id") String id)
+    public ResponseEntity<Object> removeOne(@PathVariable("id") String id, HttpServletRequest request)
     {
         Map<String, Object> responseMap = new HashMap<>();
         try{
+            String token = request.getHeader("token");
+            boolean checkValid = AuthService.checkValid(token);
+            if(!checkValid) {
+                responseMap.put("message", "Not authorize!");
+                responseMap.put("data", checkValid);
+                return new ResponseEntity<>(responseMap, HttpStatus.OK);
+            }
+            
             data_potensi data_potensi = Data_potensiService.findOne(id);
             if(data_potensi == null){
                 responseMap.put("message", "Data potensi not found!");

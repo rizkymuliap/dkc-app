@@ -1,8 +1,10 @@
 package com.dkc.models.entities;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.time.Year;
-import java.util.Date;
+
+import com.dkc.models.repos.Uniqid;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -21,7 +23,7 @@ public class data_potensi implements Serializable{
 
     @Id
     @Column(name = "data_id", length = 300)
-    private String data_id;
+    private String data_id = "DTP"+Uniqid.generate();
 
     @Column(name = "school_id", length = 300)
     private String school_id;
@@ -42,26 +44,24 @@ public class data_potensi implements Serializable{
     
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at")
-    private Date created_at;
+    private LocalDateTime created_at = LocalDateTime.now();
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
-    private Date updated_at;
+    private LocalDateTime updated_at = LocalDateTime.now();
 
     public data_potensi() {
     }
 
     public data_potensi(String data_id, String school_id, String stage_id,
             @NotEmpty(message = "Anggota tidak boleh nol") int total_member, String dkr_id,
-            @NotEmpty(message = "Tahun tidak boleh kosong") Year year, Date created_at, Date updated_at) {
+            @NotEmpty(message = "Tahun tidak boleh kosong") Year year) {
         this.data_id = data_id;
         this.school_id = school_id;
         this.stage_id = stage_id;
         this.total_member = total_member;
         this.dkr_id = dkr_id;
         this.year = year;
-        this.created_at = created_at;
-        this.updated_at = updated_at;
     }
 
     public static Long getSerialversionuid() {
@@ -116,21 +116,11 @@ public class data_potensi implements Serializable{
         this.year = year;
     }
 
-    public Date getCreated_at() {
+    public LocalDateTime getCreated_at() {
         return created_at;
     }
 
-    public void setCreated_at(Date created_at) {
-        this.created_at = created_at;
-    }
-
-    public Date getUpdated_at() {
+    public LocalDateTime getUpdated_at() {
         return updated_at;
     }
-
-    public void setUpdated_at(Date updated_at) {
-        this.updated_at = updated_at;
-    }
-
-    
 }

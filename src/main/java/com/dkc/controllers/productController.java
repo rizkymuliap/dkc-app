@@ -19,7 +19,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.dkc.models.entities.product;
 import com.dkc.services.productService;
+import com.dkc.services.authService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 @RestController
@@ -28,11 +30,21 @@ public class productController {
     
     @Autowired 
     private productService ProductService;
+    @Autowired 
+    private authService AuthService; 
 
     @PostMapping()
-    public ResponseEntity<Object> create(@Valid @RequestBody product data, BindingResult bindingResult)
+    public ResponseEntity<Object> create(@Valid @RequestBody product data, HttpServletRequest request, BindingResult bindingResult)
     {
         Map<String, Object> responseMap = new HashMap<>();
+        String token = request.getHeader("token");
+        boolean checkValid = AuthService.checkValid(token);
+        if(!checkValid) {
+          responseMap.put("message", "Not authorize!");
+          responseMap.put("data", checkValid);
+          return new ResponseEntity<>(responseMap, HttpStatus.OK);
+        }
+        
         if(bindingResult.hasErrors())
         {
             responseMap.put("message", "Description or type required!");

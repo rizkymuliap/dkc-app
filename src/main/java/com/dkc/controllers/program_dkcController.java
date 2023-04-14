@@ -18,8 +18,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.dkc.models.entities.program_dkc;
+import com.dkc.services.authService;
 import com.dkc.services.program_dkcService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 @RestController
@@ -28,11 +30,21 @@ public class program_dkcController {
     
     @Autowired 
     private program_dkcService Program_dkcService;
+    @Autowired 
+    private authService AuthService; 
 
     @PostMapping()
-    public ResponseEntity<Object> create(@Valid @RequestBody program_dkc data, BindingResult bindingResult)
+    public ResponseEntity<Object> create(@Valid @RequestBody program_dkc data, BindingResult bindingResult, HttpServletRequest request)
     {
         Map<String, Object> responseMap = new HashMap<>();
+        String token = request.getHeader("token");
+        boolean checkValid = AuthService.checkValid(token);
+        if(!checkValid) {
+            responseMap.put("message", "Not authorize!");
+            responseMap.put("data", checkValid);
+            return new ResponseEntity<>(responseMap, HttpStatus.OK);
+        }
+
         if(bindingResult.hasErrors())
         {
             responseMap.put("message", "All field required!");
@@ -84,9 +96,17 @@ public class program_dkcController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Object> update(@PathVariable("id") String id,@Valid @RequestBody program_dkc data, BindingResult bindingResult)
+    public ResponseEntity<Object> update(@PathVariable("id") String id,@Valid @RequestBody program_dkc data, BindingResult bindingResult, HttpServletRequest request)
     {
         Map<String, Object> responseMap = new HashMap<>();
+        String token = request.getHeader("token");
+        boolean checkValid = AuthService.checkValid(token);
+        if(!checkValid) {
+            responseMap.put("message", "Not authorize!");
+            responseMap.put("data", checkValid);
+            return new ResponseEntity<>(responseMap, HttpStatus.OK);
+        }
+
         try{
             program_dkc program_dkc = Program_dkcService.findOne(id);
             if(program_dkc.getProgram_id() == null){
@@ -113,9 +133,17 @@ public class program_dkcController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> removeOne(@PathVariable("id") String id)
+    public ResponseEntity<Object> removeOne(@PathVariable("id") String id, HttpServletRequest request)
     {
         Map<String, Object> responseMap = new HashMap<>();
+        String token = request.getHeader("token");
+        boolean checkValid = AuthService.checkValid(token);
+        if(!checkValid) {
+            responseMap.put("message", "Not authorize!");
+            responseMap.put("data", checkValid);
+            return new ResponseEntity<>(responseMap, HttpStatus.OK);
+        }
+
         Program_dkcService.removeOne(id);
         responseMap.put("message", "Program DKC successfully deleted!");
         return new ResponseEntity<>(responseMap, HttpStatus.OK);

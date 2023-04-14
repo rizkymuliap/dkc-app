@@ -19,7 +19,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.dkc.models.entities.achievement;
 import com.dkc.services.achievementService;
+import com.dkc.services.authService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 @RestController
@@ -28,10 +30,20 @@ public class achievementController {
     
     @Autowired 
     private achievementService AchievementService;
+    @Autowired 
+    private authService AuthService; 
 
     @PostMapping()
-    public ResponseEntity<Object> create(@Valid @RequestBody achievement data, BindingResult bindingResult){
+    public ResponseEntity<Object> create(@Valid @RequestBody achievement data, BindingResult bindingResult, HttpServletRequest request){
         Map<String, Object> responseMap = new HashMap<>();
+        String token = request.getHeader("token");
+        boolean checkValid = AuthService.checkValid(token);
+        if(!checkValid) {
+            responseMap.put("message", "Not authorize!");
+            responseMap.put("data", checkValid);
+            return new ResponseEntity<>(responseMap, HttpStatus.OK);
+        }
+
         if(bindingResult.hasErrors())
         {
             responseMap.put("message", "Description or type required!");
@@ -46,10 +58,18 @@ public class achievementController {
     
 
     @GetMapping("/{id}")
-    public ResponseEntity<Object> getOne(@PathVariable("id") String id)
+    public ResponseEntity<Object> getOne(@PathVariable("id") String id, HttpServletRequest request)
     {
         Map<String, Object> responseMap = new HashMap<>();
         try{
+            String token = request.getHeader("token");
+            boolean checkValid = AuthService.checkValid(token);
+            if(!checkValid) {
+                responseMap.put("message", "Not authorize!");
+                responseMap.put("data", checkValid);
+                return new ResponseEntity<>(responseMap, HttpStatus.OK);
+            }
+
             achievement achievements = AchievementService.findOne(id);
             
             if(achievements == null)
@@ -83,10 +103,18 @@ public class achievementController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Object> update(@PathVariable("id") String id, @Valid @RequestBody achievement data, BindingResult bindingResult)
+    public ResponseEntity<Object> update(@PathVariable("id") String id, @Valid @RequestBody achievement data, BindingResult bindingResult, HttpServletRequest request)
     {
         Map<String, Object> responseMap = new HashMap<>();
         try{
+            String token = request.getHeader("token");
+            boolean checkValid = AuthService.checkValid(token);
+            if(!checkValid) {
+                responseMap.put("message", "Not authorize!");
+                responseMap.put("data", checkValid);
+                return new ResponseEntity<>(responseMap, HttpStatus.OK);
+            }
+
             achievement achievements = AchievementService.findOne(id);
             if(achievements == null)
             {
@@ -110,10 +138,18 @@ public class achievementController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> removeOne(@PathVariable("id") String id)
+    public ResponseEntity<Object> removeOne(@PathVariable("id") String id, HttpServletRequest request)
     {
         Map<String, Object> responseMap = new HashMap<>();
         try{
+            String token = request.getHeader("token");
+            boolean checkValid = AuthService.checkValid(token);
+            if(!checkValid) {
+                responseMap.put("message", "Not authorize!");
+                responseMap.put("data", checkValid);
+                return new ResponseEntity<>(responseMap, HttpStatus.OK);
+            }
+            
             achievement achievements = AchievementService.findOne(id);
             if(achievements == null)
             {

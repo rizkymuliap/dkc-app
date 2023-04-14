@@ -1,8 +1,11 @@
 package com.dkc.models.entities;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.time.Year;
 import java.util.Date;
+
+import com.dkc.models.repos.Uniqid;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -21,7 +24,7 @@ public class gp_report_dkr implements Serializable{
 
     @Id
     @Column(name = "report_id", length = 300)
-    private String report_id;
+    private String report_id = "RPR"+Uniqid.generate();
 
     @NotEmpty(message = "Nama tidak boleh kosong")
     @Column(name = "name", length = 300, nullable = false)
@@ -44,11 +47,11 @@ public class gp_report_dkr implements Serializable{
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at")
-    private Date created_at;
+    private LocalDateTime created_at = LocalDateTime.now();
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "updated_at")
-    private Date updated_at;
+    private LocalDateTime updated_at = LocalDateTime.now();
 
     public gp_report_dkr() {
     }
@@ -56,15 +59,13 @@ public class gp_report_dkr implements Serializable{
     public gp_report_dkr(String report_id, @NotEmpty(message = "Nama tidak boleh kosong") String name,
             @NotEmpty(message = "Dokumen tidak boleh kosong") String document, String dkr_id,
             @NotEmpty(message = "Tipe tidak boleh kosong") String type,
-            @NotEmpty(message = "Tahun tidak boleh kosong") Year year, Date created_at, Date updated_at) {
+            @NotEmpty(message = "Tahun tidak boleh kosong") Year year) {
         this.report_id = report_id;
         this.name = name;
         this.document = document;
         this.dkr_id = dkr_id;
         this.type = type;
         this.year = year;
-        this.created_at = created_at;
-        this.updated_at = updated_at;
     }
 
     public static Long getSerialversionuid() {
@@ -119,23 +120,11 @@ public class gp_report_dkr implements Serializable{
         this.year = year;
     }
 
-    public Date getCreated_at() {
+    public LocalDateTime getCreated_at() {
         return created_at;
     }
 
-    public void setCreated_at(Date created_at) {
-        this.created_at = created_at;
-    }
-
-    public Date getUpdated_at() {
+    public LocalDateTime getUpdated_at() {
         return updated_at;
     }
-
-    public void setUpdated_at(Date updated_at) {
-        this.updated_at = updated_at;
-    }
-
-   
-    
-    
 }

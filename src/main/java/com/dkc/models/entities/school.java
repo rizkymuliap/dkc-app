@@ -1,11 +1,16 @@
 package com.dkc.models.entities;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
+
+import com.dkc.models.repos.Uniqid;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import jakarta.validation.constraints.NotEmpty;
 
 @Entity
@@ -16,18 +21,26 @@ public class school implements Serializable{
 
     @Id
     @Column(name = "school_id", length = 300)
-    private String school_id;
+    private String school_id = "SCH"+Uniqid.generate();
 
     @NotEmpty(message = "Nama sekolah tidak boleh kosong")
     @Column(name = "school_name", length = 300, nullable = false)
     private String school_name;
 
     @NotEmpty(message = "Nomor GuDep tidak boleh kosong")
-    @Column(name = "gudep_number", length = 300, unique = true, nullable = false)
+    @Column(name = "gudep_number", length = 300, nullable = false)
     private String gudep_number;
 
     @Column(name = "dkr_id", length = 300)
     private String dkr_id;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "created_at")
+    private LocalDateTime created_at = LocalDateTime.now();
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "updated_at")
+    private LocalDateTime updated_at = LocalDateTime.now();
 
     public school() {
     }
@@ -76,5 +89,15 @@ public class school implements Serializable{
         this.dkr_id = dkr_id;
     }
 
-    
+    public void setCreated_at(LocalDateTime created_at) {
+        this.created_at = created_at;
+    }
+
+    public LocalDateTime getCreated_at() {
+        return created_at;
+    }
+
+    public LocalDateTime getUpdated_at() {
+        return updated_at;
+    }
 }
